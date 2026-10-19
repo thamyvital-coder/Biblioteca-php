@@ -3,10 +3,10 @@ const http = require('node:http');
 const path = require('node:path');
 const { Server } = require('socket.io');
 
-const MAX_HP = 100;
+const MAX_HP = 300;
 const HIT_DAMAGE = 10;
 const USER_COOLDOWN_MS = 1500;
-const ROUND_BREAK_MS = 5000;
+const ROUND_BREAK_MS = 6000;
 
 function freshState() {
   return {
@@ -14,7 +14,7 @@ function freshState() {
       lula: { id: 'lula', name: 'Lula', hp: MAX_HP, maxHp: MAX_HP },
       flavio: { id: 'flavio', name: 'Flávio Bolsonaro', hp: MAX_HP, maxHp: MAX_HP }
     },
-    round: 1, status: 'playing', lastAction: 'A luta vai começar!', hits: 0, updatedAt: Date.now()
+    round: 1, timer: 99, status: 'playing', lastAction: 'ROUND 1 — PREPARE-SE!', hits: 0, updatedAt: Date.now()
   };
 }
 
@@ -40,8 +40,9 @@ async function createServer(options = {}) {
   function resetRound() {
     state.players.lula.hp = MAX_HP;
     state.players.flavio.hp = MAX_HP;
+    state.timer = 99;
     state.status = 'playing';
-    state.lastAction = `Rodada ${state.round}: luta iniciada!`;
+    state.lastAction = `ROUND ${state.round} — FIGHT!`;
     state.hits = 0;
     publish();
   }
@@ -69,7 +70,7 @@ async function createServer(options = {}) {
     io.emit('hit', { target: event.target, damage: HIT_DAMAGE, gift: event.label, userId, at: now });
     if (player.hp <= 0) {
       state.status = 'finished';
-      state.lastAction = `🏆 ${state.players[event.target === 'lula' ? 'flavio' : 'lula'].name} venceu a rodada!`;
+      state.lastAction = `K.O.! ${state.players[event.target === 'lula' ? 'flavio' : 'lula'].name} venceu a rodada!`;
       const finishedRound = state.round;
       clearTimeout(roundTimer);
       roundTimer = setTimeout(() => {
@@ -82,7 +83,6 @@ async function createServer(options = {}) {
     publish();
     return { ok: true, state };
   }
-  // Local event endpoint for testing or an authorized adapter. Never expose publicly without protection.
   app.post('/api/event', (req, res) => {
     const result = applyGift(req.body);
     res.status(result.status || 200).json(result);
