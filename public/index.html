@@ -3,44 +3,55 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#090d1c">
-  <title>Brasília Fighter — Jogo da LIVE</title>
+  <meta name="theme-color" content="#06133d">
+  <title>Brasília Fighter — Arcade Live</title>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-  <main class="arena">
-    <header class="topline">
-      <div class="brand"><span class="brand-mark">BF</span><div><strong>BRASÍLIA FIGHTER</strong><small>JOGO INTERATIVO DA LIVE</small></div></div>
-      <div class="round-pill">RODADA <span id="round">1</span></div>
+  <div class="scanlines" aria-hidden="true"></div>
+  <main class="game">
+    <header class="hud">
+      <section class="player-hud lula-hud">
+        <div class="portrait-mini lula-mini" aria-hidden="true"><span>LV</span></div>
+        <div class="health-info"><div class="name-row"><strong>LULA</strong><span id="lula-hp-text">300</span></div><div class="health"><div id="lula-hp" class="health-fill"></div></div><small>PLAYER 1 · BRASIL</small></div>
+      </section>
+      <div class="round-info"><span id="round-label">ROUND 1</span><strong id="timer">99</strong><small>FIGHT!</small></div>
+      <section class="player-hud flavio-hud">
+        <div class="health-info"><div class="name-row"><strong>FLÁVIO BOLSONARO</strong><span id="flavio-hp-text">300</span></div><div class="health"><div id="flavio-hp" class="health-fill"></div></div><small>PLAYER 2 · DESAFIANTE</small></div>
+        <div class="portrait-mini flavio-mini" aria-hidden="true"><span>FB</span></div>
+      </section>
     </header>
-    <section class="arena-heading"><p class="eyebrow">A ARENA ESTÁ ABERTA</p><h1>Quem fica de pé?</h1><p class="subheading">A próxima ação pode mudar a luta.</p></section>
-    <section class="fighters" aria-label="Personagens">
-      <article class="fighter fighter-lula" id="fighter-lula">
-        <div class="fighter-meta"><span class="side-label blue">AZUL</span><span class="hp-label"><b id="lula-hp-text">100</b> HP</span></div>
-        <div class="health-track"><div id="lula-hp" class="health-fill blue-fill"></div></div>
-        <div class="portrait lula-portrait" aria-hidden="true"><div class="aura"></div><div class="body-shape"></div><div class="head"><div class="hair"></div><div class="brow"></div><div class="eyes"></div><div class="nose"></div><div class="beard"></div><div class="mouth"></div></div><div class="fist"></div></div>
-        <div class="fighter-name"><small>PERSONAGEM 01</small><h2>Lula</h2><span class="fighter-status" id="lula-status">Pronto para lutar</span></div>
-      </article>
-      <div class="vs">VS</div>
-      <article class="fighter fighter-flavio" id="fighter-flavio">
-        <div class="fighter-meta"><span class="side-label red">VERMELHO</span><span class="hp-label"><b id="flavio-hp-text">100</b> HP</span></div>
-        <div class="health-track"><div id="flavio-hp" class="health-fill red-fill"></div></div>
-        <div class="portrait flavio-portrait" aria-hidden="true"><div class="aura"></div><div class="body-shape"></div><div class="head"><div class="hair"></div><div class="brow"></div><div class="eyes"></div><div class="nose"></div><div class="beard"></div><div class="mouth"></div></div><div class="fist"></div></div>
-        <div class="fighter-name"><small>PERSONAGEM 02</small><h2>Flávio Bolsonaro</h2><span class="fighter-status" id="flavio-status">Pronto para lutar</span></div>
-      </article>
+
+    <section class="arena" aria-label="Arena de luta em Brasília">
+      <div class="sky"></div><div class="cloud cloud-one"></div><div class="cloud cloud-two"></div>
+      <div class="congress"><div class="tower tower-one"></div><div class="tower tower-two"></div><div class="bowl bowl-left"></div><div class="bowl bowl-right"></div><div class="building-base"></div><div class="water"></div></div>
+      <div class="flag">🇧🇷</div><div class="city-sign">BRASÍLIA<br><b>TAMBÉM É<br>DO POVO</b></div>
+      <div class="sun-glow"></div>
+      <div class="fighter fighter-lula" id="fighter-lula" aria-label="Lula, personagem de luta">
+        <div class="fighter-shadow"></div><div class="legs"><i></i><b></b></div><div class="suit"><i class="tie"></i></div><div class="neck"></div><div class="head"><i class="hair"></i><i class="brow"></i><i class="eyes"></i><i class="nose"></i><i class="beard"></i><i class="mouth"></i></div><div class="arm arm-back"></div><div class="arm arm-front"><i class="glove"></i></div>
+      </div>
+      <div class="fighter fighter-flavio" id="fighter-flavio" aria-label="Flávio Bolsonaro, personagem de luta">
+        <div class="fighter-shadow"></div><div class="legs"><i></i><b></b></div><div class="suit"><i class="tie"></i></div><div class="neck"></div><div class="head"><i class="hair"></i><i class="brow"></i><i class="eyes"></i><i class="nose"></i><i class="beard"></i><i class="mouth"></i></div><div class="arm arm-back"></div><div class="arm arm-front"><i class="glove"></i></div>
+      </div>
+      <div class="fight-callout" id="fight-callout">FIGHT!</div>
+      <div class="damage-pop" id="damage-pop"></div>
+      <div class="floor"></div>
+      <div class="arena-caption"><span>CAPITAL CLASH</span><b>BRASÍLIA · BRASIL</b><span>ARCADE MODE</span></div>
     </section>
-    <div class="action-feed" role="status" aria-live="polite"><span class="live-dot"></span><span id="last-action">A luta vai começar!</span></div>
-    <section class="rules"><div class="section-title">REGRAS DA ARENA <span class="rules-hint">PRESENTES → GOLPES</span></div>
-      <div class="rule-row"><span class="gift-icon red-rose">🌹</span><div><strong>Rosa vermelha</strong><small>Flávio Bolsonaro recebe um golpe</small></div><span class="damage">−10 HP</span></div>
-      <div class="rule-row"><span class="gift-icon white-rose">🤍</span><div><strong>Rosa branca</strong><small>Lula recebe um golpe</small></div><span class="damage">−10 HP</span></div>
+
+    <section class="bottom-ui">
+      <div class="rose-legend panel">
+        <div class="legend-title">CONTROLES DA LIVE</div>
+        <div class="legend-row"><span class="rose red-rose">🌹</span><span>ROSA VERMELHA <small>→ GOLPE NO FLÁVIO</small></span><kbd>−10 HP</kbd></div>
+        <div class="legend-row"><span class="rose white-rose">🤍</span><span>ROSA BRANCA <small>→ GOLPE NO LULA</small></span><kbd>−10 HP</kbd></div>
+        <div class="test-buttons"><button id="red-button" class="red-button">TESTAR 🌹</button><button id="white-button" class="white-button">TESTAR 🤍</button><button id="reset-button" class="reset-button">↻ RESET</button></div>
+      </div>
+      <div class="logo-panel"><div class="logo-emblem">BF</div><strong>BRASÍLIA<br><i>FIGHTER</i></strong><small>LIVE BATTLE ARENA</small><div class="audio-status"><i></i> SFX ORIGINAL · SOM ATIVO</div></div>
+      <div class="rules panel"><div class="legend-title">REGRAS DA LIVE</div><p>• Cada lutador começa com 300 HP</p><p>• Cada rosa tira 10 pontos de vida</p><p>• Golpes têm animação e som original</p><p>• Rodadas até o nocaute · pausa de 6s</p><div class="live-status"><i id="connection-dot"></i><span id="connection-text">Conectando ao jogo…</span><b id="hits-count">HITS 0</b></div></div>
     </section>
-    <section class="demo-panel"><div class="section-title">MODO DE TESTE <span class="demo-badge">LOCAL</span></div><p>Teste as ações antes de conectar eventos da sua transmissão.</p>
-      <div class="demo-buttons"><button id="red-button" class="gift-button red-button"><span>🌹</span> Testar rosa vermelha</button><button id="white-button" class="gift-button white-button"><span>🤍</span> Testar rosa branca</button></div>
-      <button id="reset-button" class="reset-button">↻ Reiniciar rodada</button>
-    </section>
-    <footer><span class="connection"><i id="connection-dot"></i><span id="connection-text">Conectando ao jogo…</span></span><span>Áudio sintetizado · sem música comercial</span></footer>
+    <footer><span>● MODO TESTE</span><span id="last-action">ROUND 1 — PREPARE-SE!</span><span>BRASÍLIA FIGHTER · FAN-MADE ARCADE STYLE</span></footer>
   </main>
-  <div class="particles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-  <script src="/socket.io/socket.io.js"></script><script src="/renderer.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/renderer.js"></script>
 </body>
 </html>
