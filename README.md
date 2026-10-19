@@ -1,40 +1,55 @@
-# Brasília Fighter — Starter
+# Brasília Fighter — Arcade Edition
 
-Jogo de luta vertical para capturar no TikTok LIVE Studio ou OBS. Esta versão inclui um modo de teste local; não inicia transmissões e não conecta automaticamente ao chat do TikTok.
+Jogo de luta em estilo arcade retrô, com arena inspirada em Brasília, HUD de fliperama, barras de energia, cronômetro visual, animações de impacto e modo de teste para capturar no TikTok LIVE Studio ou OBS.
 
-## Regras
-- Rosa vermelha (`rose_red`) causa 10 de dano em Flávio Bolsonaro.
-- Rosa branca (`rose_white`) causa 10 de dano em Lula.
-- Cada personagem começa com 100 HP.
-- A rodada reinicia 5 segundos após um nocaute.
-- Limite de frequência de 1,5 segundo por usuário.
-- Interface vertical, animações, partículas e efeitos sonoros sintetizados pela Web Audio API.
+## Rodar no Windows
 
-## Requisitos
-Node.js 20+ e npm.
+Requisitos: Node.js 20+.
 
-## Rodar no navegador
 ```bash
 npm install
 npm run start:web
 ```
-Abra o endereço mostrado no terminal. O servidor escuta apenas em `127.0.0.1`.
 
-## Rodar como aplicativo Electron
+Abra o endereço mostrado no terminal (normalmente http://127.0.0.1:3002).
+
+Para abrir a versão desktop Electron:
+
 ```bash
 npm install
 npm start
 ```
 
-## Endpoint de eventos
-POST `http://127.0.0.1:3002/api/event` com JSON:
+## Controles de teste
+
+- **Rosa vermelha**: golpe em Flávio Bolsonaro (10 de dano).
+- **Rosa branca**: golpe em Lula (10 de dano).
+- **Reset**: reinicia a luta.
+- Cada personagem começa com 300 HP.
+- Ao chegar a 0 HP, ocorre K.O.; a próxima rodada inicia após 6 segundos.
+- Cooldown de 1,5 segundo por usuário para eventos recebidos em `/api/event`.
+- Efeitos sonoros são sintetizados localmente via Web Audio API.
+
+## Eventos HTTP
+
+O endpoint `POST /api/event` aceita JSON como:
+
 ```json
 { "gift": "rose_red", "userId": "usuario-teste" }
 ```
-Para rosa branca, use `rose_white`. Os aliases aceitos estão em `server.cjs`. Eventos repetidos do mesmo usuário dentro do cooldown retornam HTTP 429.
 
-## Integração com live
-O endpoint é uma interface para um adaptador de eventos autorizado. Este projeto não lê o TikTok LIVE automaticamente, não faz scraping e não coleta credenciais. Configure uma fonte de eventos permitida e teste localmente antes de uma transmissão. Inicie a live manualmente no software de transmissão.
+ou
 
-## Notas
-Os personagens são ilustrações CSS estilizadas, não fotografias. Esta é uma base inicial; a integração real de eventos e o empacotamento precisam ser testados no computador de destino.
+```json
+{ "gift": "rose_white", "userId": "usuario-teste" }
+```
+
+O endpoint é uma interface para um adaptador autorizado. Este projeto **não se conecta automaticamente ao TikTok**, não lê o chat por scraping, não coleta credenciais e não inicia transmissões. Teste localmente antes de ligar qualquer fonte de eventos autorizada. O servidor se vincula a `127.0.0.1`.
+
+## Captura de live
+
+Abra a página ou o aplicativo e capture a janela no TikTok LIVE Studio/OBS. A transmissão deve ser iniciada manualmente no software de transmissão.
+
+## Direção visual
+
+A interface usa arte CSS original e cenários geométricos inspirados em jogos de luta arcade dos anos 90. Não inclui sprites, logotipos, música ou outros assets oficiais de Street Fighter.
