@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090d1c">
+  <title>Brasília Fighter — Jogo da LIVE</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main class="arena">
+    <header class="topline">
+      <div class="brand"><span class="brand-mark">BF</span><div><strong>BRASÍLIA FIGHTER</strong><small>JOGO INTERATIVO DA LIVE</small></div></div>
+      <div class="round-pill">RODADA <span id="round">1</span></div>
+    </header>
+    <section class="arena-heading"><p class="eyebrow">A ARENA ESTÁ ABERTA</p><h1>Quem fica de pé?</h1><p class="subheading">A próxima ação pode mudar a luta.</p></section>
+    <section class="fighters" aria-label="Personagens">
+      <article class="fighter fighter-lula" id="fighter-lula">
+        <div class="fighter-meta"><span class="side-label blue">AZUL</span><span class="hp-label"><b id="lula-hp-text">100</b> HP</span></div>
+        <div class="health-track"><div id="lula-hp" class="health-fill blue-fill"></div></div>
+        <div class="portrait lula-portrait" aria-hidden="true"><div class="aura"></div><div class="body-shape"></div><div class="head"><div class="hair"></div><div class="brow"></div><div class="eyes"></div><div class="nose"></div><div class="beard"></div><div class="mouth"></div></div><div class="fist"></div></div>
+        <div class="fighter-name"><small>PERSONAGEM 01</small><h2>Lula</h2><span class="fighter-status" id="lula-status">Pronto para lutar</span></div>
+      </article>
+      <div class="vs">VS</div>
+      <article class="fighter fighter-flavio" id="fighter-flavio">
+        <div class="fighter-meta"><span class="side-label red">VERMELHO</span><span class="hp-label"><b id="flavio-hp-text">100</b> HP</span></div>
+        <div class="health-track"><div id="flavio-hp" class="health-fill red-fill"></div></div>
+        <div class="portrait flavio-portrait" aria-hidden="true"><div class="aura"></div><div class="body-shape"></div><div class="head"><div class="hair"></div><div class="brow"></div><div class="eyes"></div><div class="nose"></div><div class="beard"></div><div class="mouth"></div></div><div class="fist"></div></div>
+        <div class="fighter-name"><small>PERSONAGEM 02</small><h2>Flávio Bolsonaro</h2><span class="fighter-status" id="flavio-status">Pronto para lutar</span></div>
+      </article>
+    </section>
+    <div class="action-feed" role="status" aria-live="polite"><span class="live-dot"></span><span id="last-action">A luta vai começar!</span></div>
+    <section class="rules"><div class="section-title">REGRAS DA ARENA <span class="rules-hint">PRESENTES → GOLPES</span></div>
+      <div class="rule-row"><span class="gift-icon red-rose">🌹</span><div><strong>Rosa vermelha</strong><small>Flávio Bolsonaro recebe um golpe</small></div><span class="damage">−10 HP</span></div>
+      <div class="rule-row"><span class="gift-icon white-rose">🤍</span><div><strong>Rosa branca</strong><small>Lula recebe um golpe</small></div><span class="damage">−10 HP</span></div>
+    </section>
+    <section class="demo-panel"><div class="section-title">MODO DE TESTE <span class="demo-badge">LOCAL</span></div><p>Teste as ações antes de conectar eventos da sua transmissão.</p>
+      <div class="demo-buttons"><button id="red-button" class="gift-button red-button"><span>🌹</span> Testar rosa vermelha</button><button id="white-button" class="gift-button white-button"><span>🤍</span> Testar rosa branca</button></div>
+      <button id="reset-button" class="reset-button">↻ Reiniciar rodada</button>
+    </section>
+    <footer><span class="connection"><i id="connection-dot"></i><span id="connection-text">Conectando ao jogo…</span></span><span>Áudio sintetizado · sem música comercial</span></footer>
+  </main>
+  <div class="particles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <script src="/socket.io/socket.io.js"></script><script src="/renderer.js"></script>
+</body>
+</html>
