@@ -51,3 +51,15 @@ Ajuste `ELEVENLABS_VOICE_ID` para o ID da voz que você configurou e possui auto
 - O bot não publica comentários nem controla o TikTok LIVE Studio; ele lê comentários recebidos e reproduz áudio no computador.
 - O áudio precisa ser capturado pelo TikTok LIVE Studio (por exemplo, pelo áudio do desktop ou por um dispositivo de áudio virtual).
 - Teste com poucos comentários antes de usar em uma live pública e confirme que o áudio está sendo capturado.
+
+
+## Personagem animado no TikTok LIVE
+
+O bot agora inicia um overlay visual local em `http://127.0.0.1:3210`. Ele usa WebSocket para acionar a animação de gesto quando uma resposta é preparada e quando chega um presente.
+
+1. Coloque os arquivos `happy_idle.webm` e `waving_gesture.webm` dentro de `tiktok-live-bot/overlay/assets/`.
+2. Execute `npm install` e `npm start`.
+3. No OBS/TikTok LIVE Studio, adicione uma fonte de navegador com endereço `http://127.0.0.1:3210`, largura 1920 e altura 1080, com fundo transparente habilitado.
+4. Mantenha a janela do bot aberta durante a live.
+
+Os arquivos WebM precisam conter transparência. O personagem fica em idle continuamente e faz o gesto de aceno ao reagir a comentários/respostas e presentes.
