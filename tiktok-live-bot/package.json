@@ -2,7 +2,7 @@
   "name": "tiktok-live-voice-bot",
   "version": "1.0.0",
   "private": true,
-  "description": "Bot local de respostas faladas para comentários do TikTok LIVE usando Ollama Cloud e ElevenLabs",
+  "description": "Bot de respostas faladas para TikTok LIVE com Ollama Cloud, ElevenLabs e personagem animado",
   "main": "bot.js",
   "scripts": {
     "start": "node bot.js",
@@ -12,6 +12,7 @@
     "axios": "^1.8.4",
     "dotenv": "^16.4.7",
     "play-sound": "^1.1.6",
-    "tiktok-live-connector": "^2.1.0"
+    "tiktok-live-connector": "^2.1.0",
+    "ws": "^8.18.0"
   }
 }
