@@ -155,7 +155,10 @@ async function processItem(item) {
   const filePath = path.join(TEMP_DIR, `fala-${Date.now()}-${Math.random().toString(16).slice(2)}.mp3`);
 
   try {
-    const reply = await generateReply(item.prompt, signal);
+    // Presentes usam frases prontas: pulamos o Gemini para reduzir a latência.
+    const reply = item.type === 'gift'
+      ? buildGiftReply(item)
+      : await generateReply(item.prompt, signal);
     throwIfAborted(signal);
     console.log(`Resposta gerada [${item.type === 'gift' ? 'PRESENTE' : 'chat'}]: ${reply}`);
 
@@ -227,6 +230,22 @@ function enqueueComment(data) {
   void runQueue();
 }
 
+function buildGiftReply(item) {
+  const { username, giftName, count } = item;
+  const amount = count > 1 ? `${count} ${giftName}` : giftName;
+  const replies = [
+    `Aí sim, @${username}! Muito obrigado pelo presente ${amount}! Você chegou chegando na live!`,
+    `Opa, @${username}, mandou presente! Valeu demais pelo ${amount}! Você é fera!`,
+    `Salve, @${username}! Obrigado pelo ${amount}! Essa energia merece até dancinha!`,
+    `Êêê, @${username}! Valeu pelo presente ${amount}! Você deixou a live mais animada!`,
+    `Muito obrigado, @${username}, pelo ${amount}! Um salve especial pra você!`,
+  ];
+  const index = item.replyIndex % replies.length;
+  return cleanText(replies[index]);
+}
+
+let giftReplyIndex = 0;
+
 function enqueueGift(data) {
   const giftType = Number(data?.giftType ?? data?.gift_type ?? 0);
   const repeatEnd = data?.repeatEnd ?? data?.repeat_end;
@@ -244,7 +263,14 @@ function enqueueGift(data) {
   ].join(' ');
 
   console.log(`🎁 Presente de @${username}: ${giftName}${count > 1 ? ` x${count}` : ''}. Prioridade máxima!`);
-  queue.unshift({ type: 'gift', prompt });
+  queue.unshift({
+    type: 'gift',
+    username,
+    giftName,
+    count,
+    replyIndex: giftReplyIndex++,
+    prompt,
+  });
 
   // Se uma resposta comum estiver falando ou sintetizando o áudio, interrompe-a para priorizar o presente.
   if (activeAbortController) activeAbortController.abort();
