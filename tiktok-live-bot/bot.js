@@ -5,6 +5,8 @@ const axios = require('axios');
 const fs = require('node:fs');
 const path = require('node:path');
 const { spawn } = require('node:child_process');
+const http = require('node:http');
+const { WebSocketServer } = require('ws');
 const { pipeline } = require('node:stream/promises');
 
 const requiredEnv = ['ELEVENLABS_API_KEY', 'ELEVENLABS_VOICE_ID', 'OLLAMA_API_KEY', 'TIKTOK_USERNAME'];
@@ -44,7 +46,60 @@ const OLLAMA_SYSTEM_INSTRUCTION = [
 ].join(' ');
 
 const tiktokLive = new TikTokLiveConnection(TIKTOK_USERNAME, {});
+
+const OVERLAY_PORT = Number(process.env.OVERLAY_PORT || 3210);
+const OVERLAY_DIR = path.join(__dirname, 'overlay');
+const overlayServer = http.createServer((req, res) => {
+  const requestPath = decodeURIComponent((req.url || '/').split('?')[0]);
+  const routes = {
+    '/': ['index.html', 'text/html; charset=utf-8'],
+    '/index.html': ['index.html', 'text/html; charset=utf-8'],
+    '/style.css': ['style.css', 'text/css; charset=utf-8'],
+    '/overlay.js': ['overlay.js', 'text/javascript; charset=utf-8'],
+    '/assets/happy_idle.webm': ['assets/happy_idle.webm', 'video/webm'],
+    '/assets/waving_gesture.webm': ['assets/waving_gesture.webm', 'video/webm'],
+  };
+  const route = routes[requestPath];
+  if (!route) {
+    res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('Not found');
+    return;
+  }
+  const filePath = path.join(OVERLAY_DIR, route[0]);
+  fs.readFile(filePath, (error, data) => {
+    if (error) {
+      res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+      res.end('Arquivo do personagem não encontrado. Extraia os arquivos da pasta overlay/assets.');
+      return;
+    }
+    res.writeHead(200, {
+      'Content-Type': route[1],
+      'Cache-Control': 'no-cache',
+      'Access-Control-Allow-Origin': '*',
+    });
+    res.end(data);
+  });
+});
+const overlayWss = new WebSocketServer({ server: overlayServer });
+overlayWss.on('connection', (socket) => {
+  overlayClients.add(socket);
+  socket.on('close', () => overlayClients.delete(socket));
+  socket.send(JSON.stringify({ type: 'connected' }));
+});
+function notifyOverlay(animation = 'idle', detail = {}) {
+  const message = JSON.stringify({ type: 'animation', animation, ...detail });
+  for (const socket of overlayClients) {
+    if (socket.readyState === 1) socket.send(message);
+  }
+}
+overlayServer.on('error', (error) => {
+  console.error('Não foi possível iniciar o overlay visual:', error.message);
+});
+overlayServer.listen(OVERLAY_PORT, '127.0.0.1', () => {
+  console.log(`Overlay do personagem disponível em http://127.0.0.1:${OVERLAY_PORT}`);
+});
 const queue = [];
+const overlayClients = new Set();
 const recentComments = new Map();
 let workerRunning = false;
 let lastAcceptedAt = 0;
@@ -176,6 +231,7 @@ async function processItem(item) {
       : await generateReply(item.prompt, signal);
     throwIfAborted(signal);
     console.log(`Resposta gerada [${item.type === 'gift' ? 'PRESENTE' : 'chat'}]: ${reply}`);
+    notifyOverlay(item.type === 'gift' ? 'wave' : 'react', { username: item.username || '' });
 
     await synthesizeSpeech(reply, filePath, signal);
     throwIfAborted(signal);
@@ -240,6 +296,7 @@ function enqueueComment(data) {
   console.log(`Comentário de @${username}: ${comment}`);
   queue.push({
     type: 'chat',
+    username,
     prompt: `Comentário de @${username}: "${comment}". Responda diretamente a essa pessoa com uma fala curta, divertida e natural para uma live.`,
   });
   void runQueue();
@@ -278,6 +335,7 @@ function enqueueGift(data) {
   ].join(' ');
 
   console.log(`🎁 Presente de @${username}: ${giftName}${count > 1 ? ` x${count}` : ''}. Prioridade máxima!`);
+  notifyOverlay('wave', { username, giftName });
   queue.unshift({
     type: 'gift',
     username,
