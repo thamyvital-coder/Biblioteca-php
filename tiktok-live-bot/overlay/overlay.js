@@ -4,7 +4,7 @@
   const animations = {
     idle: '/assets/walk_sway.webm',
     wave: '/assets/waving_gesture.webm',
-    react: '/assets/shoot_gun.webm',
+    react: '/assets/waving_gesture.webm',
   };
   let current = '';
   function playAnimation(name) {
