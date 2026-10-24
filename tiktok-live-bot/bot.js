@@ -58,7 +58,7 @@ const overlayServer = http.createServer((req, res) => {
     '/overlay.js': ['overlay.js', 'text/javascript; charset=utf-8'],
     '/assets/walk_sway.webm': ['assets/walk_sway.webm', 'video/webm'],
     '/assets/waving_gesture.webm': ['assets/waving_gesture.webm', 'video/webm'],
-    '/assets/shoot_gun.webm': ['assets/shoot_gun.webm', 'video/webm'],
+    
   };
   const route = routes[requestPath];
   if (!route) {
