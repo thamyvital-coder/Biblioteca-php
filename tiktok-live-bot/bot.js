@@ -25,7 +25,7 @@ const {
   TIKTOK_USERNAME,
 } = process.env;
 
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
 const ELEVENLABS_MODEL = process.env.ELEVENLABS_MODEL || 'eleven_multilingual_v2';
 const MAX_REPLY_CHARS = Number(process.env.MAX_REPLY_CHARS || 350);
 const MIN_CHAT_INTERVAL_MS = Number(process.env.MIN_CHAT_INTERVAL_MS || 1800);
