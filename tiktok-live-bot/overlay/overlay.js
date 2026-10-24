@@ -1,22 +1,21 @@
 (() => {
   const video = document.getElementById('character');
   const status = document.getElementById('status');
-  const idleUrl = '/assets/happy_idle.webm';
-  const waveUrl = '/assets/waving_gesture.webm';
-  let waveTimer;
+  const animations = {
+    idle: '/assets/walk_sway.webm',
+    wave: '/assets/waving_gesture.webm',
+    react: '/assets/shoot_gun.webm',
+  };
   let current = '';
   function playAnimation(name) {
-    const next = name === 'wave' || name === 'react' ? waveUrl : idleUrl;
-    if (current === next && !video.paused && name === 'idle') return;
+    const animation = animations[name] ? name : 'idle';
+    const next = animations[animation];
+    if (current === next && !video.paused && animation === 'idle') return;
     current = next;
-    video.loop = next === idleUrl;
+    video.loop = animation === 'idle';
     video.src = next;
     video.currentTime = 0;
     video.play().catch(() => {});
-    if (next === waveUrl) {
-      clearTimeout(waveTimer);
-      waveTimer = setTimeout(() => playAnimation('idle'), 1800);
-    }
   }
   video.addEventListener('ended', () => playAnimation('idle'));
   playAnimation('idle');
@@ -28,7 +27,9 @@
     if (data.type !== 'animation') return;
     playAnimation(data.animation);
     if (data.username) {
-      status.textContent = data.animation === 'wave' ? 'Salve, @' + data.username + '!' : 'Respondendo @' + data.username + '...';
+      status.textContent = data.animation === 'wave'
+        ? 'Salve, @' + data.username + '!'
+        : 'Respondendo @' + data.username + '...';
       status.classList.add('visible');
       clearTimeout(status._timer);
       status._timer = setTimeout(() => status.classList.remove('visible'), 2200);
