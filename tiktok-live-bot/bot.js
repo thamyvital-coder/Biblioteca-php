@@ -5,9 +5,8 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const axios = require('axios');
 const fs = require('node:fs');
 const path = require('node:path');
-const os = require('node:os');
+const { spawn } = require('node:child_process');
 const { pipeline } = require('node:stream/promises');
-const player = require('play-sound')();
 
 const requiredEnv = ['ELEVENLABS_API_KEY', 'ELEVENLABS_VOICE_ID', 'GEMINI_API_KEY', 'TIKTOK_USERNAME'];
 const missing = requiredEnv.filter((key) => !process.env[key]);
@@ -30,7 +29,11 @@ const ELEVENLABS_MODEL = process.env.ELEVENLABS_MODEL || 'eleven_multilingual_v2
 const MAX_REPLY_CHARS = Number(process.env.MAX_REPLY_CHARS || 350);
 const MIN_CHAT_INTERVAL_MS = Number(process.env.MIN_CHAT_INTERVAL_MS || 1800);
 const MAX_QUEUE_SIZE = Number(process.env.MAX_QUEUE_SIZE || 5);
-const TEMP_DIR = path.join(os.tmpdir(), 'tiktok-live-voice-bot');
+const TEMP_DIR = path.join(__dirname, 'audios');
+const VLC_PATH = process.env.VLC_PATH || [
+  'C:\\Program Files\\VideoLAN\\VLC\\vlc.exe',
+  'C:\\Program Files (x86)\\VideoLAN\\VLC\\vlc.exe',
+].find((candidate) => fs.existsSync(candidate));
 
 fs.mkdirSync(TEMP_DIR, { recursive: true });
 
@@ -103,9 +106,19 @@ async function synthesizeSpeech(text, filePath) {
 
 function playAudio(filePath) {
   return new Promise((resolve, reject) => {
-    player.play(filePath, (error) => {
-      if (error) reject(error);
-      else resolve();
+    if (!VLC_PATH || !fs.existsSync(VLC_PATH)) {
+      reject(new Error('VLC não encontrado. Instale o VLC ou configure VLC_PATH no arquivo .env.'));
+      return;
+    }
+
+    const vlc = spawn(VLC_PATH, ['--intf', 'dummy', '--play-and-exit', filePath], {
+      windowsHide: true,
+      stdio: 'ignore',
+    });
+    vlc.once('error', reject);
+    vlc.once('close', (code) => {
+      if (code === 0) resolve();
+      else reject(new Error(`VLC encerrou com código ${code}.`));
     });
   });
 }
@@ -129,6 +142,9 @@ async function processComment(data) {
     console.log('Resposta gerada:', reply);
 
     await synthesizeSpeech(reply, filePath);
+    const audioInfo = await fs.promises.stat(filePath);
+    if (audioInfo.size < 1000) throw new Error(`Arquivo de áudio inválido ou incompleto (${audioInfo.size} bytes).`);
+    console.log(`Áudio salvo: ${filePath} (${audioInfo.size} bytes). Reproduzindo com VLC...`);
     await playAudio(filePath);
   } catch (error) {
     const status = error?.response?.status;
@@ -138,11 +154,7 @@ async function processComment(data) {
       console.error('Detalhes da API:', detail.message || detail);
     }
   } finally {
-    try {
-      await fs.promises.rm(filePath, { force: true });
-    } catch (error) {
-      console.warn('Não foi possível apagar o áudio temporário:', error.message);
-    }
+    // Mantém os MP3s em tiktok-live-bot/audios para permitir diagnóstico e reprodução manual.
   }
 }
 
