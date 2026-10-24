@@ -49,7 +49,7 @@ const model = genAI.getGenerativeModel({
   ].join(' '),
 });
 
-const tiktokLive = new TikTokLiveConnection(TIKTOK_USERNAME);
+const tiktokLive = new TikTokLiveConnection(TIKTOK_USERNAME, {});
 let queue = Promise.resolve();
 let queuedCount = 0;
 let lastAcceptedAt = 0;
@@ -111,10 +111,16 @@ function playAudio(filePath) {
 }
 
 async function processComment(data) {
-  const comment = cleanText(data?.comment);
-  if (!comment) return;
+  // A versão 2.x do conector coloca o texto em `content` e os dados do autor em `user`.
+  // Mantemos os campos antigos como fallback para compatibilidade.
+  const comment = cleanText(data?.content ?? data?.comment);
+  if (!comment) {
+    console.warn('Evento de chat recebido sem texto reconhecível:', Object.keys(data || {}).join(', '));
+    return;
+  }
 
-  console.log(`Comentário de @${data.uniqueId || 'usuário'}: ${comment}`);
+  const username = data?.user?.displayId || data?.user?.uniqueId || data?.uniqueId || 'usuário';
+  console.log(`Comentário de @${username}: ${comment}`);
 
   const filePath = path.join(TEMP_DIR, `fala-${Date.now()}-${Math.random().toString(16).slice(2)}.mp3`);
 
