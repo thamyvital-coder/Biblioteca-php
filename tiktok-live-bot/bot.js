@@ -1,14 +1,13 @@
 require('dotenv').config();
 
 const { TikTokLiveConnection } = require('tiktok-live-connector');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
 const axios = require('axios');
 const fs = require('node:fs');
 const path = require('node:path');
 const { spawn } = require('node:child_process');
 const { pipeline } = require('node:stream/promises');
 
-const requiredEnv = ['ELEVENLABS_API_KEY', 'ELEVENLABS_VOICE_ID', 'GEMINI_API_KEY', 'TIKTOK_USERNAME'];
+const requiredEnv = ['ELEVENLABS_API_KEY', 'ELEVENLABS_VOICE_ID', 'OLLAMA_API_KEY', 'TIKTOK_USERNAME'];
 const missing = requiredEnv.filter((key) => !process.env[key]);
 
 if (missing.length) {
@@ -17,8 +16,9 @@ if (missing.length) {
   process.exit(1);
 }
 
-const { ELEVENLABS_API_KEY, ELEVENLABS_VOICE_ID, GEMINI_API_KEY, TIKTOK_USERNAME } = process.env;
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
+const { ELEVENLABS_API_KEY, ELEVENLABS_VOICE_ID, OLLAMA_API_KEY, TIKTOK_USERNAME } = process.env;
+const OLLAMA_API_URL = process.env.OLLAMA_API_URL || 'https://ollama.com/api/chat';
+const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'gemma4:31b';
 const ELEVENLABS_MODEL = process.env.ELEVENLABS_MODEL || 'eleven_multilingual_v2';
 const MAX_REPLY_CHARS = Number(process.env.MAX_REPLY_CHARS || 260);
 const MIN_CHAT_INTERVAL_MS = Number(process.env.MIN_CHAT_INTERVAL_MS || 1200);
@@ -32,20 +32,16 @@ const VLC_PATH = process.env.VLC_PATH || [
 
 fs.mkdirSync(TEMP_DIR, { recursive: true });
 
-const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({
-  model: GEMINI_MODEL,
-  systemInstruction: [
-    'Você é um streamer virtual muito carismático, brincalhão, espontâneo e acolhedor, falando português brasileiro informal.',
-    'Seja engraçado e criativo sem parecer um robô. Use frases curtas, naturais e fáceis de falar em voz alta.',
-    'Varie as reações e não repita bordões em respostas consecutivas. Pode usar humor leve, surpresas e energia de live.',
-    'Agradeça presentes pelo nome de quem enviou e pelo nome do presente, com entusiasmo genuíno e uma brincadeira curta quando combinar.',
-    'Responda a comentários como numa conversa ao vivo. Mande salves quando pedirem.',
-    'Se o assunto for sério, responda com respeito. Não humilhe, não insulte e não invente fatos atuais.',
-    'Se perguntarem, diga claramente que você é um bot/assistente virtual.',
-    'Responda somente com a fala a ser pronunciada, sem rótulos, aspas, emojis em excesso ou instruções de atuação.',
-  ].join(' '),
-});
+const OLLAMA_SYSTEM_INSTRUCTION = [
+  'Você é um streamer virtual muito carismático, brincalhão, espontâneo e acolhedor, falando português brasileiro informal.',
+  'Seja engraçado e criativo sem parecer um robô. Use frases curtas, naturais e fáceis de falar em voz alta.',
+  'Varie as reações e não repita bordões em respostas consecutivas. Pode usar humor leve, surpresas e energia de live.',
+  'Agradeça presentes pelo nome de quem enviou e pelo nome do presente, com entusiasmo genuíno e uma brincadeira curta quando combinar.',
+  'Responda a comentários como numa conversa ao vivo. Mande salves quando pedirem.',
+  'Se o assunto for sério, responda com respeito. Não humilhe, não insulte e não invente fatos atuais.',
+  'Se perguntarem, diga claramente que você é um bot/assistente virtual.',
+  'Responda somente com a fala a ser pronunciada, sem rótulos, aspas, emojis em excesso ou instruções de atuação.',
+].join(' ');
 
 const tiktokLive = new TikTokLiveConnection(TIKTOK_USERNAME, {});
 const queue = [];
@@ -69,10 +65,29 @@ function throwIfAborted(signal) {
 }
 
 async function generateReply(prompt, signal) {
-  const result = await model.generateContent(prompt);
   throwIfAborted(signal);
-  const reply = cleanText(result?.response?.text?.());
-  if (!reply) throw new Error('O Gemini retornou uma resposta vazia.');
+  const response = await axios.post(
+    OLLAMA_API_URL,
+    {
+      model: OLLAMA_MODEL,
+      messages: [
+        { role: 'system', content: OLLAMA_SYSTEM_INSTRUCTION },
+        { role: 'user', content: prompt },
+      ],
+      stream: false,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${OLLAMA_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      timeout: 90000,
+      signal,
+    },
+  );
+  throwIfAborted(signal);
+  const reply = cleanText(response?.data?.message?.content);
+  if (!reply) throw new Error('O Ollama retornou uma resposta vazia.');
   return reply;
 }
 
